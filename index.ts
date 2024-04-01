@@ -8,13 +8,13 @@ dotenv.config();
 const app: Application = express();
 const port = process.env.PORT || 8000;
 
-console.log(CMS.demo())
+// console.log(CMS.demo())
 const task = {
   code: `
 #include <stdio.h>
 
 int add(int a, int b) {
-    return a + b;
+    return a - b;
 }
 
 int main() {
@@ -27,8 +27,8 @@ int main() {
 `,
   user_id: "42344244",
   testCases: [
-    { input: [ "5", "3" ], output: "8"},
-    { input: [ "-2", "7" ], output: "5" }
+    {caseID:  1, input: [ "5", "3" ], output: "8"},
+    {caseID:  2, input: [ "-2", "7" ], output: "5" }
   ]
 };
 
@@ -41,32 +41,43 @@ const taskNodeJS = {
     output: process.stdout
   });
   
-  rl.question('Enter first number: ', (num1) => {
-    rl.question('Enter second number: ', (num2) => {
+  rl.question('', (num1) => {
+    rl.question('', (num2) => {
       const sum = parseInt(num1) + parseInt(num2);
-      console.log("NUM 1 :", num1, "num2", num2);
-      console.log(\`The sum of \${num1} and \${num2} is \${sum}.\`);
-      console.log('Sum:', sum);
+      console.log( sum);
       rl.close();
     });
   });
   `,
   user_id: "42344244",
   testCases: [
-    { input: ["5 4"], output: "8" },
-    { input: ["-2 8"], output: "6" },
-    { input: ["0 0"], output: "0" },
-    { input: ["10 20"], output: "30" },
-    { input: ["-5 5"], output: "0" }
+    {caseID:  1, input: ["5 4"], output: "9" },
+    {caseID:  2, input: ["-2 8"], output: "6" },
+    {caseID:  3, input: ["0 0"], output: "0" },
+    {caseID:  4, input: ["10 20"], output: "30" },
+    {caseID:  5, input: ["-5 5"], output: "0" }
   ]
 };
 
 const jsonTaskNodeJS = JSON.stringify(taskNodeJS);
-console.log(jsonTaskNodeJS);
+// console.log(jsonTaskNodeJS);
+// CMS.codeExecutionNodeJs(JSON.parse(jsonTaskNodeJS))
 
-CMS.codeExecutionNodeJs(taskNodeJS)
+async function executeGPP() {
+  await CMS.codeExecutionGCC(task)
+  .then((data) => {
+    console.log("Main GCC",JSON.parse(data))
+  })
+  await CMS.codeExecutionNodeJs(JSON.parse(jsonTaskNodeJS))
+  .then((data) => {
+    console.log("Main NodeJS", JSON.parse(data))
+  })
+}
 
-CMS.codeExecutionGCC(task)
+executeGPP()
+
+
+CMS.healthCheck()
 
 app.get('/', (req: Request, res: Response) => {
   res.send('Welcome to Express & TypeScript Server'); 
